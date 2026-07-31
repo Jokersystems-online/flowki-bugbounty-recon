@@ -1,0 +1,27 @@
+# admin-status-leak.yaml — generiert und reviewt
+id: admin-status-leak
+
+info:
+  name: Admin Status Endpoint Information Disclosure
+  author: dennis-flowki
+  severity: medium
+  description: Detects unauthenticated /admin/status endpoints returning JSON with sensitive info
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/admin/status"
+      - "{{BaseURL}}/admin/info"
+      - "{{BaseURL}}/admin/health"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        part: body
+        words:
+          - "\"database\""
+          - "\"version\""
+          - "\"hostname\""
+        condition: or
