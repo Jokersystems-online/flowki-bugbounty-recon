@@ -2,13 +2,14 @@
 
 LLM-orchestrierte Recon-Pipeline für Bug-Bounty-Programme (HackerOne,
 Intigriti, YesWeHack). Claude Code orchestriert klassische Recon-Tools
-(amass, subfinder, assetfinder, httpx, nuclei), parst deren Output und
-generiert Nuclei-Templates aus interessanten Findings.
+(amass, subfinder, assetfinder, httpx, gau, katana, theHarvester, sherlock,
+nuclei), parst deren Output und generiert Nuclei-Templates aus
+interessanten Findings.
 
-Companion-Repo zum Artikel [Bug-Bounty-Recon mit KI](https://flowki-club.de/blog/2026-04-18-bug-bounty-recon-mit-ki?utm_source=github&utm_medium=repo&utm_campaign=content-launch-2026-07)
-auf [FlowKI Club](https://flowki-club.de) — der komplette Ablauf inkl.
-gemessener Timings (~104 Min. Scope-zu-Report vs. ~4h ohne KI-Assistenz)
-steht im Artikel.
+Companion-Repo zu zwei FlowKI-Club-Artikeln:
+[Bug-Bounty-Recon mit KI](https://flowki-club.de/blog/2026-04-18-bug-bounty-recon-mit-ki?utm_source=github&utm_medium=repo&utm_campaign=content-launch-2026-07)
+und [OSINT-Pipelines mit Claude Code](https://flowki-club.de/blog/2026-04-19-osint-pipelines-mit-claude-code?utm_source=github&utm_medium=repo&utm_campaign=content-launch-2026-07)
+auf [FlowKI Club](https://flowki-club.de).
 
 ## Was hier drin ist
 
@@ -18,15 +19,22 @@ steht im Artikel.
   aus einem echten Recon-Finding
 - `scope-analysis-prompt.md` — die zwei Claude-Code-Prompts für
   Scope-Extraktion und Live-Asset-Priorisierung
+- `osint/url-discovery.sh` — URL-Discovery aus Wayback/Common-Crawl (gau)
+  plus aktivem Crawl (katana), gefiltert auf interessante Dateitypen
+- `osint/people-osint.sh` — People-OSINT (theHarvester, Hunter.io, Sherlock)
+  — **nur nutzen wenn explizit im Scope erlaubt**
+- `osint/correlation-prompts.md` — die fünf Claude-Prompts die rohe
+  Tool-Outputs zu einem priorisierten `INVENTORY.md` verdichten, plus
+  empfohlene Verzeichnisstruktur
 
-Das ist die Pipeline wie im Artikel beschrieben — kein fertiges Produkt,
-sondern ein Startpunkt zum Forken und Anpassen.
+Das ist die Pipeline wie in beiden Artikeln beschrieben — kein fertiges
+Produkt, sondern ein Startpunkt zum Forken und Anpassen.
 
 ## Setup
 
 ```bash
 pip install -r requirements.txt  # keine externen Python-Deps, nur stdlib
-# amass, subfinder, assetfinder, httpx, nuclei separat installieren
+# amass, subfinder, assetfinder, httpx, gau, katana, theHarvester, sherlock, nuclei separat installieren
 python claude_recon.py <target-domain>
 cat all_subdomains.txt | httpx -silent -title -tech-detect -status-code -o httpx_results.json -json
 ```
@@ -34,7 +42,7 @@ cat all_subdomains.txt | httpx -silent -title -tech-detect -status-code -o httpx
 ## Was KI hier tut — und was nicht
 
 Funktioniert gut: Pipeline-Orchestrierung, Output-Filterung, Template-
-Generierung, Report-Vorbereitung.
+Generierung, Report-Vorbereitung, JSON-Korrelation über viele Quellen.
 
 Bleibt beim Menschen: die tatsächliche Lücke finden, Validation und
 Exploitation, die Entscheidung ob eine Eskalation noch im Scope ist.
@@ -44,9 +52,11 @@ Exploitation, die Entscheidung ob eine Eskalation noch im Scope ist.
 Nutze diese Pipeline **ausschließlich** gegen Ziele, für die du eine
 ausdrückliche Erlaubnis hast — ein dokumentiertes Bug-Bounty-Programm
 (HackerOne/Intigriti/YesWeHack) im definierten Scope, oder einen
-autorisierten Pentest mit schriftlichem Auftrag. Aktive Enumeration gegen
-Ziele außerhalb deines Scopes ist in Deutschland nach §§ 202a, 202b, 202c
-StGB strafbar. Kein Haftungsausschluss ersetzt eigene Sorgfalt.
+autorisierten Pentest mit schriftlichem Auftrag. People-OSINT (`osint/people-osint.sh`)
+nur wenn das Programm Social-Engineering-Recon explizit erlaubt — die
+meisten Programme tun das nicht. Aktive Enumeration gegen Ziele außerhalb
+deines Scopes ist in Deutschland nach §§ 202a, 202b, 202c StGB strafbar.
+Kein Haftungsausschluss ersetzt eigene Sorgfalt.
 
 ## Diskussion
 
